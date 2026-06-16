@@ -15,30 +15,40 @@ The plugin is lossless: it keeps the first occurrence of content intact and only
 
 ## Install
 
-Install from GitHub with OpenCode's plugin command:
+Clone the plugin and install its dependencies:
 
 ```bash
-opencode plugin anyin233/contextpilot-opencode --global
+export PLUGIN_DIR="$HOME/.local/share/opencode/plugins/contextpilot-opencode"
+mkdir -p "$(dirname "$PLUGIN_DIR")"
+git clone https://github.com/anyin233/contextpilot-opencode.git "$PLUGIN_DIR"
+(cd "$PLUGIN_DIR" && bun install)
 ```
 
-Or add it to your OpenCode config manually:
+Then add the expanded absolute plugin path to your OpenCode config. If you already use other plugins, keep them and append this one:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "anyin233/contextpilot-opencode"
+    "oh-my-openagent@latest",
+    "$PLUGIN_DIR"
   ]
 }
 ```
 
-If you already use other plugins, keep them and append this one:
+In the JSON above, replace `"$PLUGIN_DIR"` with the absolute path printed by:
+
+```bash
+printf '%s\n' "$PLUGIN_DIR"
+```
+
+For example, on macOS it may look like:
 
 ```json
 {
   "plugin": [
     "oh-my-openagent@latest",
-    "anyin233/contextpilot-opencode"
+    "/Users/you/.local/share/opencode/plugins/contextpilot-opencode"
   ]
 }
 ```
@@ -51,16 +61,10 @@ Use this prompt with an OpenCode-capable agent:
 
 ```text
 Install the ContextPilot OpenCode plugin in the same style as oh-my-openagent.
-Preserve my existing OpenCode plugins, add anyin233/contextpilot-opencode to the global OpenCode plugin list, verify the config still parses, verify the plugin entrypoint loads, and tell me to restart OpenCode if it is already running.
+Clone https://github.com/anyin233/contextpilot-opencode.git into a stable local plugin directory, run bun install there, preserve my existing OpenCode plugins, append the expanded absolute plugin directory path to the global OpenCode plugin list, verify the config still parses, verify the plugin entrypoint loads, and tell me to restart OpenCode if it is already running.
 ```
 
-The agent can either run:
-
-```bash
-opencode plugin anyin233/contextpilot-opencode --global
-```
-
-Or edit `~/.config/opencode/opencode.json` so the `plugin` array includes `"anyin233/contextpilot-opencode"` without removing existing entries.
+The agent should append the real expanded path, not the literal `~` shorthand and not the literal `$PLUGIN_DIR` token, because OpenCode path plugin specs are loaded as file paths.
 
 ## Check savings
 

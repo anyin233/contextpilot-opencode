@@ -13,9 +13,9 @@
     "opencode",
     "opencode-plugin",
     "contextpilot",
-    "kv-cache",
+    "context-optimization",
     "context-reuse",
-    "prompt-cache",
+    "token-savings",
     "dedup",
     "llm"
   ],

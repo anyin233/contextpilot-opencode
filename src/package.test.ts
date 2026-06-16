@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test"
 
 type PackageJson = {
   description?: string
+  keywords?: string[]
   exports?: unknown
   files?: string[]
   scripts?: Record<string, string>
@@ -23,6 +24,26 @@ describe("opencode plugin package metadata", () => {
 
     expect(packageJson.description).toContain("lossless deduplication")
     expect(packageJson.description).not.toContain("reordering")
+  })
+
+  it("uses non-overclaiming package keywords for dedup-only behavior", async () => {
+    const packageJson: PackageJson = await Bun.file(new URL("../package.json", import.meta.url)).json()
+
+    expect(packageJson.keywords).not.toContain("kv-cache")
+    expect(packageJson.keywords).not.toContain("prompt-cache")
+    expect(packageJson.keywords).toContain("context-optimization")
+    expect(packageJson.keywords).toContain("token-savings")
+  })
+
+  it("documents the verified clone-and-path OpenCode install flow", async () => {
+    const readme = await Bun.file(new URL("../README.md", import.meta.url)).text()
+
+    expect(readme).not.toContain("opencode plugin anyin233/contextpilot-opencode --global")
+    expect(readme).toContain("git clone https://github.com/anyin233/contextpilot-opencode.git")
+    expect(readme).toContain("PLUGIN_DIR")
+    expect(readme).toContain('"$PLUGIN_DIR"')
+    expect(readme).toContain("oh-my-openagent@latest")
+    expect(readme).toContain("https://github.com/EfficientContext/ContextPilot")
   })
 
   it("keeps runtime imports inside the opencode plugin package", async () => {
