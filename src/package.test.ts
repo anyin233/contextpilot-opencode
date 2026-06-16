@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test"
 
 type PackageJson = {
+  description?: string
   exports?: unknown
   files?: string[]
   scripts?: Record<string, string>
@@ -15,6 +16,13 @@ describe("opencode plugin package metadata", () => {
     expect(packageJson.scripts?.build).toBe("tsc")
     expect(packageJson.exports).toEqual({ ".": "./src/index.ts", "./tui": "./src/tui.tsx" })
     expect(packageJson.files).toEqual(["src/index.ts", "src/tui.tsx", "src/stats.ts", "src/engine/"])
+  })
+
+  it("describes the shipped dedup-only behavior without reordering claims", async () => {
+    const packageJson: PackageJson = await Bun.file(new URL("../package.json", import.meta.url)).json()
+
+    expect(packageJson.description).toContain("lossless deduplication")
+    expect(packageJson.description).not.toContain("reordering")
   })
 
   it("keeps runtime imports inside the opencode plugin package", async () => {

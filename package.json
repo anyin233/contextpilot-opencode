@@ -1,7 +1,7 @@
 {
   "name": "contextpilot-opencode",
   "version": "0.1.0",
-  "description": "ContextPilot plugin for OpenCode — per-turn context optimization via deduplication and reordering for KV cache sharing.",
+  "description": "ContextPilot plugin for OpenCode — per-turn context optimization via lossless deduplication of repeated tool outputs.",
   "type": "module",
   "license": "Apache-2.0",
   "author": "ContextPilot Contributors",
