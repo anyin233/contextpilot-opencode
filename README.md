@@ -15,45 +15,40 @@ The plugin is lossless: it keeps the first occurrence of content intact and only
 
 ## Install
 
-Clone the plugin and install its dependencies:
-
-```bash
-export PLUGIN_DIR="$HOME/.local/share/opencode/plugins/contextpilot-opencode"
-mkdir -p "$(dirname "$PLUGIN_DIR")"
-git clone https://github.com/anyin233/contextpilot-opencode.git "$PLUGIN_DIR"
-(cd "$PLUGIN_DIR" && bun install)
-```
-
-Then add the expanded absolute plugin path to your OpenCode config. If you already use other plugins, keep them and append this one:
+Add the main plugin to your OpenCode config for context optimization and the `contextpilot_status` tool:
 
 ```json
 {
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
-    "oh-my-openagent@latest",
-    "$PLUGIN_DIR"
+    "contextpilot-opencode@latest"
   ]
 }
 ```
 
-In the JSON above, replace `"$PLUGIN_DIR"` with the absolute path printed by:
-
-```bash
-printf '%s\n' "$PLUGIN_DIR"
-```
-
-For example, on macOS it may look like:
+If you already use other OpenCode plugins, keep them and append ContextPilot in the same `plugin` array:
 
 ```json
 {
   "plugin": [
     "oh-my-openagent@latest",
-    "/Users/you/.local/share/opencode/plugins/contextpilot-opencode"
+    "contextpilot-opencode@latest"
   ]
 }
 ```
 
-Restart OpenCode after installing so it reloads the plugin list.
+To show savings in the terminal sidebar, add the TUI package tag to your OpenCode TUI config (`tui.json`):
+
+```json
+{
+  "$schema": "https://opencode.ai/tui.json",
+  "plugin": [
+    "contextpilot-opencode@tui"
+  ]
+}
+```
+
+Restart OpenCode after changing either plugin list so it loads the new plugins.
 
 ## Let an agent install it
 
@@ -61,10 +56,10 @@ Use this prompt with an OpenCode-capable agent:
 
 ```text
 Install the ContextPilot OpenCode plugin in the same style as oh-my-openagent.
-Clone https://github.com/anyin233/contextpilot-opencode.git into a stable local plugin directory, run bun install there, preserve my existing OpenCode plugins, append the expanded absolute plugin directory path to the global OpenCode plugin list, verify the config still parses, verify the plugin entrypoint loads, and tell me to restart OpenCode if it is already running.
+Preserve my existing OpenCode plugins, append `contextpilot-opencode@latest` to my OpenCode `opencode.json` plugin list, append `contextpilot-opencode@tui` to my OpenCode `tui.json` plugin list, verify both configs still parse, verify both plugin specs resolve, and tell me to restart OpenCode if it is already running.
 ```
 
-The agent should append the real expanded path, not the literal `~` shorthand and not the literal `$PLUGIN_DIR` token, because OpenCode path plugin specs are loaded as file paths.
+Use `contextpilot-opencode@latest` for the main server plugin and `contextpilot-opencode@tui` for the TUI sidebar plugin.
 
 ## Check savings
 
@@ -96,7 +91,7 @@ Savings snapshots are written to:
 
 ```bash
 bun install
-bun test src/**/*.test.ts
+bun test ./src
 bun run typecheck
 bun run build
 npm pack --dry-run

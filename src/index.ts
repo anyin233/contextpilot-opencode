@@ -151,6 +151,7 @@ class SessionState {
   private singleDocHashes = new Map<string, string>() // content_hash → part_id
   private optimizeCount = 0
   totalCharsSaved = 0
+  totalCharsConsumed = 0
   totalDocsDeduped = 0
 
   private hasReorder = false
@@ -159,6 +160,15 @@ class SessionState {
     this.optimizeCount++
 
     let charsSaved = 0
+    let charsConsumed = 0
+
+    // ── Capture original consumed size before any dedup ──────────────
+    for (const msg of messages) {
+      for (const part of msg.parts) {
+        if (!isCompletedToolPart(part)) continue
+        charsConsumed += getToolOutput(part).length
+      }
+    }
 
     // ── Single-doc cross-turn dedup ──────────────────────────────────
     for (const msg of messages) {
@@ -208,16 +218,22 @@ class SessionState {
     }
 
     this.totalCharsSaved += charsSaved
-    recordAndPersistSavings(messages[0]?.info.sessionID ?? "unknown", charsSaved)
+    this.totalCharsConsumed += charsConsumed
+    recordAndPersistSavings(messages[0]?.info.sessionID ?? "unknown", charsSaved, charsConsumed)
 
-    log(`[ContextPilot] Turn ${this.optimizeCount}: saved ${charsSaved} chars (~${Math.round(charsSaved / 4)} tokens) | docs deduped: ${this.totalDocsDeduped} | tracked: ${this.singleDocHashes.size} | cumulative: ${this.totalCharsSaved} chars (~${Math.round(this.totalCharsSaved / 4)} tokens)`)
+    const ratioPct = this.totalCharsConsumed > 0 ? Math.round((this.totalCharsSaved / this.totalCharsConsumed) * 1000) / 10 : 0
+    log(`[ContextPilot] Turn ${this.optimizeCount}: saved ${charsSaved} chars (~${Math.round(charsSaved / 4)} tokens) of ${charsConsumed} consumed | docs deduped: ${this.totalDocsDeduped} | tracked: ${this.singleDocHashes.size} | cumulative: ${this.totalCharsSaved} chars saved / ${this.totalCharsConsumed} chars consumed (~${ratioPct}% saved)`)
   }
 
   getStats() {
+    const ratio = this.totalCharsConsumed > 0 ? this.totalCharsSaved / this.totalCharsConsumed : 0
     return {
       turns: this.optimizeCount,
       totalCharsSaved: this.totalCharsSaved,
+      totalCharsConsumed: this.totalCharsConsumed,
       estimatedTokensSaved: Math.round(this.totalCharsSaved / 4),
+      estimatedTokensConsumed: Math.round(this.totalCharsConsumed / 4),
+      savedRatio: ratio,
       docsDeduped: this.totalDocsDeduped,
       trackedHashes: this.singleDocHashes.size,
       reorderAvailable: this.hasReorder,
@@ -251,11 +267,14 @@ export const ContextPilotPlugin = async () => {
         args: {},
         async execute() {
           const stats = state.getStats()
+          const ratioPct = (stats.savedRatio * 100).toFixed(1)
           return [
             "ContextPilot Status:",
             `  Turns optimized: ${stats.turns}`,
             `  Chars saved: ${stats.totalCharsSaved.toLocaleString()}`,
             `  Tokens saved: ~${stats.estimatedTokensSaved.toLocaleString()}`,
+            `  Tokens consumed: ~${stats.estimatedTokensConsumed.toLocaleString()}`,
+            `  Saved ratio: ${ratioPct}%`,
             `  Docs deduped: ${stats.docsDeduped}`,
             `  Tracked hashes: ${stats.trackedHashes}`,
             `  Reorder: ${stats.reorderAvailable ? "active" : "dedup-only"}`,
