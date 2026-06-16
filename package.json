@@ -1,0 +1,61 @@
+{
+  "name": "contextpilot-opencode",
+  "version": "0.1.0",
+  "description": "ContextPilot plugin for OpenCode — per-turn context optimization via deduplication and reordering for KV cache sharing.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "ContextPilot Contributors",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anyin233/contextpilot-opencode.git"
+  },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "contextpilot",
+    "kv-cache",
+    "context-reuse",
+    "prompt-cache",
+    "dedup",
+    "llm"
+  ],
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./tui": "./src/tui.tsx"
+  },
+  "scripts": {
+    "test": "bun test src/**/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src/index.ts",
+    "src/tui.tsx",
+    "src/stats.ts",
+    "src/engine/"
+  ],
+  "peerDependencies": {
+    "@opencode-ai/plugin": "*"
+  },
+  "peerDependenciesMeta": {
+    "@opentui/solid": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@opencode-ai/plugin": "^1.14.41",
+    "@opentui/solid": "^0.3.4",
+    "@types/bun": "^1.3.4",
+    "@types/node": "^24.10.1",
+    "effect": "4.0.0-beta.59",
+    "typescript": "^5.9.3"
+  },
+  "bugs": {
+    "url": "https://github.com/anyin233/contextpilot-opencode/issues"
+  },
+  "homepage": "https://github.com/anyin233/contextpilot-opencode#readme"
+}
